@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf8"?>
+<define-class name="L_Shape" inherit="Agent.xml">
+
+  <x3d>
+    <!--先ほど作成したモデルの読み込み-->
+    <filename>TriShape.x3d</filename>
+  </x3d>
+
+</define-class>
+
