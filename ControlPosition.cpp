@@ -51,9 +51,9 @@ double* controlPosition(Vector3d goalPos, Vector3d currentPos, double K_p, doubl
        main_module.attr("currentPos") = "[" + tostr(currentPos.x())+" , "+ tostr(currentPos.y())+ " , " + tostr(currentPos.z()) + "]";
        py::exec("import ast", main_namespace);
        py::exec("goalPos = ast.literal_eval(goalPos)", main_namespace);
-       py::exec("print goalPos", main_namespace);
+       // py::exec("print goalPos", main_namespace);
        py::exec("currentPos = ast.literal_eval(currentPos)", main_namespace);
-       py::exec("print currentPos", main_namespace);
+       // py::exec("print currentPos", main_namespace);
        py::exec("import PID as pid", main_namespace);
        py::exec("p_x=pid.PID(K_p, K_i, K_d)",main_namespace);
  
