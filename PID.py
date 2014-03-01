@@ -10,7 +10,8 @@
 #while True:
 #     pid = p.update(measurement_value)
 #
-#
+##Use each time a new bash shell is started.
+#export PYTHONPATH=${PYTHONPATH}:/home/raghav/SigverseDevelopment/examplesForPractice/MyWorld/finalproject/TargetManipulation
 
 
 class PID:
