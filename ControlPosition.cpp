@@ -88,7 +88,87 @@ double* controlPosition(Vector3d goalPos, Vector3d currentPos, double K_p, doubl
 
     
 }  
-  
+
+
+double* controlRotation(Rotation goalRot, Rotation currentRot, double K_p, double K_i, double K_d) {  
+
+  double *pointerP;
+  double R_value[1];
+  pointerP=R_value;
+
+
+  dlopen("libpython2.7.so", RTLD_LAZY | RTLD_GLOBAL); 
+  Py_Initialize();  //initialization of the python interpreter
+  try
+    {
+      // load the main module
+       py::object main_module = py::import("__main__");
+
+      // // load the dictionary object out of the main module to create a blank canvas on which python variables and functions can be executed. 
+       py::object main_namespace = main_module.attr("__dict__");
+
+       main_module.attr("K_p") = K_p; 
+       main_module.attr("K_i") = K_i; 
+       main_module.attr("K_d") = K_d; 
+
+
+       main_module.attr("goalRot") = "[" + tostr(goalRot.qw())+" , "+ tostr(goalRot.qx())+" , "+ tostr(goalRot.qy())+ " , " + tostr(goalRot.qz()) + "]";
+       main_module.attr("currentRot") = "[" + tostr(currentRot.qw())+" , "+ tostr(currentRot.qx())+" , "+ tostr(currentRot.qy())+ " , " + tostr(currentRot.qz()) + "]";
+
+       // py::exec("print goalRot", main_namespace);
+       // py::exec("print currentRot", main_namespace);
+       py::exec("import ast", main_namespace);
+       py::exec("goalRot = ast.literal_eval(goalRot)", main_namespace);
+
+       py::exec("import ast", main_namespace);
+       py::exec("currentRot = ast.literal_eval(currentRot)", main_namespace);
+
+
+       py::exec("import transformations as T", main_namespace);
+       py::exec("euler_goal= T.euler_from_quaternion(goalRot)", main_namespace);
+       // cout << "The Goal is" << endl;
+       // py::exec("print  euler_goal", main_namespace);
+       py::exec("euler_current= T.euler_from_quaternion(currentRot)", main_namespace);
+       // cout << "The Current is" << endl;
+       // py::exec("print euler_current", main_namespace);
+       py::exec("diff= euler_current[1]-euler_goal[1]", main_namespace);
+       double difference = py::extract<double>(main_module.attr("diff"));
+       // cout << "difference is  " << difference <<  endl;
+
+        py::exec("import PID as pid", main_namespace);
+        py::exec("p_y=pid.PID(K_p, K_i, K_d)",main_namespace);
+        py::exec("p_y.setPoint(euler_goal[1])", main_namespace);
+
+        py::exec("pid_y=p_y.update(euler_current[1])", main_namespace);
+
+         
+        // cout << "Update in y is " << py::extract<double>(main_module.attr("pid_y")) << endl;
+   
+        double P_Value_Y = py::extract<double>(main_module.attr("pid_y"));
+       
+        // return P_Value_Y; 
+
+        R_value[0] = P_Value_Y;
+        R_value[1] = difference;
+
+        // R_value[0] = K_p;
+        // R_value[1] = K_d;
+
+        return pointerP;
+
+       // return difference; 
+
+  }
+
+  catch(boost::python::error_already_set const &){
+        // Parse and output the exception
+        std::string perror_str = parse_python_exception();
+        std::cout << "Error in Python: " << perror_str << std::endl;
+    }
+
+}
+
+
 
 std::string parse_python_exception(){
     PyObject *type_ptr = NULL, *value_ptr = NULL, *traceback_ptr = NULL;
