@@ -46,7 +46,7 @@ INCDIR = $(foreach dir, $(INCDIRS), -I$(dir))
 	$(CPP) $(INCDIR) $(CFLAGS) $(CPPFLAGS) -c $< -o $@ 
 
 #specifying of object file
-OBJS = Controller.so  ControlPosition.so
+OBJS = Controller.so  ControlPosition.so ControllerRotation.so
 #TobjectController.so ObjectController.so ControllerSample.so
 
 
@@ -56,6 +56,9 @@ Controller.so:: Controller.cpp
 	g++ -DCONTROLLER -DNDEBUG -DUSE_ODE -DdDOUBLE  -I$(SIG_SRC) -I$(SIG_SRC)/comm/controller -I$(INCDIR) -fPIC -shared -o $@ $^ $(LDFLAGS) -L$(EXTERN_LIBDIR) -lboost_python -lpython2.7 
 
 ControlPosition.so:: ControlPosition.cpp 
+	g++ -DCONTROLLER -DNDEBUG -DUSE_ODE -DdDOUBLE  -I$(SIG_SRC) -I$(SIG_SRC)/comm/controller -I$(INCDIR) -fPIC -shared -o $@ $^ $(LDFLAGS) -L$(EXTERN_LIBDIR) -lboost_python -lpython2.7 
+
+ControllerRotation.so:: ControllerRotation.cpp
 	g++ -DCONTROLLER -DNDEBUG -DUSE_ODE -DdDOUBLE  -I$(SIG_SRC) -I$(SIG_SRC)/comm/controller -I$(INCDIR) -fPIC -shared -o $@ $^ $(LDFLAGS) -L$(EXTERN_LIBDIR) -lboost_python -lpython2.7 
 
 
