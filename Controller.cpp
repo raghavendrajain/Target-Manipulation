@@ -3,10 +3,10 @@
 #include "Logger.h"
 #include <iostream>
 #include "math.h" 
-#include <iostream>
 #include <fstream>
 #include <iomanip>
 #include "ControlPosition.cpp" // This controls the position of tool and target using PID.
+// #include "ControllerRotation.cpp"
 
 
 using namespace std;
@@ -30,8 +30,8 @@ Vector3d firstVelocityOnTool;
 
 
 bool multipleSamples = true ; // yes if more than one sample is taken.
-int numberOfSamples = 3 ;     // set the number of samples for manipulations. the rules for each sample are set below!
-int manipulationsPerSample = 2; // if multiple samples are taken sequentially, the set the number of manipulations per sample.
+int numberOfSamples = 9 ;     // set the number of samples for manipulations. the rules for each sample are set below!
+int manipulationsPerSample = 1; // if multiple samples are taken sequentially, the set the number of manipulations per sample.
 
 
 // please set this only if multipleSamples is false!
@@ -53,8 +53,11 @@ static int zVelocityVariance;  // change the variance in Z conmpont of desired v
 static bool doesTargetPositionReset; // reset the target position to the position set in XML world file 
 static bool doesToolPositionReset;  // reset the tool position to the position set in XML world file   
 
-static bool isTargetRotationReset;  // reset the target rotation to the rotation set in XML world file // CURRENTLY: functionality not implemented!
-static bool isToolRotationReset;    // reset the target rotation to the rotation set in XML world file // CURRENTLY: functionality not implemented!
+static bool doesTargetRotationReset; // reset the target position to the position set in XML world file 
+static bool doesToolRotationReset;  // reset the tool position to the position set in XML world file   
+
+// static bool isTargetRotationReset;  // reset the target rotation to the rotation set in XML world file // CURRENTLY: functionality not implemented!
+// static bool isToolRotationReset;    // reset the target rotation to the rotation set in XML world file // CURRENTLY: functionality not implemented!
 
 
 
@@ -125,8 +128,17 @@ bool first = false;
 bool isToolPositionReset;
 bool isTargetPositionReset;
 
+bool isTargetRotationReset;  // reset the target rotation to the rotation set in XML world file // CURRENTLY: functionality not implemented!
+bool isToolRotationReset;    // reset the target rotation to the rotation set in XML world file // CURRENTLY: functionality not implemented!
+
+
+
 Vector3d differenceInPos;
 Vector3d currentVelocity; // current velocity of Tool
+
+Rotation initialToolRot; // initial rotation of the tool
+Rotation initialTargetRot; // initial rotation of the target
+          
 
 
 void MyController::onInit(InitEvent &evt) {
@@ -152,19 +164,21 @@ void MyController::onInit(InitEvent &evt) {
 
   {
 
-     firstVelocityOnTool.set(0,0,20);  // for "Contract Arm" action
+     firstVelocityOnTool.set(-20,0,20);  // for "Contract Arm" action
 
-     isVelocityinXAllowed = 0; // for "Contract Arm " action, only Z component of velocity is set. But change it if you want to apply "Push Diagonally" or "Slide Left"
+     isVelocityinXAllowed = 1; // for "Contract Arm " action, only Z component of velocity is set. But change it if you want to apply "Push Diagonally" or "Slide Left"
      isVelocityinZAllowed = 1; // for "Contract Arm " action, only Z component of velocity is set
 
-     // xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+     xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
      zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
      doesTargetPositionReset = 1; // reset the target position to the position set in XML world file 
      doesToolPositionReset = 1;   // reset the tool position to the position set in XML world file   
 
-     isTargetRotationReset = 0;  // reset the target rotation to the rotation set in XML world file // CURRENTLY: functionality not implemented!
-     isToolRotationReset = 0;    // reset the target rotation to the rotation set in XML world file // CURRENTLY: functionality not implemented!
+     doesTargetRotationReset = 1; // reset the target position to the position set in XML world file 
+     doesToolRotationReset = 1;   // reset the tool position to the position set in XML world file   
+
+
 
   }
 
@@ -193,8 +207,14 @@ void MyController::onInit(InitEvent &evt) {
   isToolPositionReset=true;
   isTargetPositionReset=true;
 
+  isToolRotationReset=true;
+  isTargetRotationReset=true;
+
   differenceInPos.set(0,0,0);
   tool->getPosition(initToolPos);
+  tool->getRotation(initialToolRot); // gets initial rotation of tool. 
+
+  box->getRotation(initialTargetRot); 
 
 
   // tool->getRotation(rotTool); 
@@ -235,7 +255,7 @@ double MyController::onAction(ActionEvent &evt) {
   SimObj *tool = getObj("StickTool");
   SimObj *box = getObj("box_001");
 
-  cout << "The simulation count in beginning is " << simulationCount << endl;
+  // cout << "The simulation count in beginning is " << simulationCount << endl;
 
   if( multipleSamples && !singleSimulation )
   {
@@ -252,10 +272,23 @@ double MyController::onAction(ActionEvent &evt) {
 
   if ( multipleSamples && !singleSimulation )
   {
+
+      /* The position and orientation reset for tool and target object is common to all samples */ 
+
+      doesTargetPositionReset = 1;   // reset the target position to the position required for each sample.
+      doesToolPositionReset   = 1 ;  // reset the tool position to the position required for each sample. 
+
+      doesTargetRotationReset = 1; // reset the target position to the position set in XML world file 
+      doesToolRotationReset   = 1;   // reset the tool position to the position set in XML world file   
+
+
+   
+    // Rule 1: for contract Arm using horizontal part  
+
     if  ( (0 <= simulationCount ) && (simulationCount < manipulationsPerSample )  )
     {
 
-          cout << " first loop simulation count " << simulationCount <<  endl; 
+          // cout << " first loop simulation count " << simulationCount <<  endl; 
 
           firstVelocityOnTool.set(0,0,20);
           velocityOnTool = firstVelocityOnTool;
@@ -267,17 +300,58 @@ double MyController::onAction(ActionEvent &evt) {
           // xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
           zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
-          doesTargetPositionReset = 1; // reset the target position to the position set in XML world file 
-          doesToolPositionReset =   1 ;  // reset the tool position to the position set in XML world file   
 
-
-          initTargetPos.set(5,1,44);
+          initTargetPos.set(-5,1,42.5);
          
-       }
+    }
 
-       // for slide left arm with vertical part feature 
+     // Rule 2: for contract Arm using vertical part   
+
+   else  if  ( ( (manipulationsPerSample * 1) <= simulationCount ) && (simulationCount < (manipulationsPerSample * 2 ) )   )  
+    {
+
+          // cout << " first loop simulation count " << simulationCount <<  endl; 
+
+          firstVelocityOnTool.set(0,0,20);
+          velocityOnTool = firstVelocityOnTool;
+
+
+          isVelocityinXAllowed = 0; 
+          isVelocityinZAllowed = 1;
+
+          // xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+
+          initTargetPos.set(7.5,1,68); // Only this will change here!
+         
+    }
+
+     // Rule 3: for contract Arm using corner    
+
+    else  if  ( ( (manipulationsPerSample * 2) <= simulationCount ) && (simulationCount < (manipulationsPerSample * 3 ) )   )  
+    {
+
+          // cout << " first loop simulation count " << simulationCount <<  endl; 
+
+          firstVelocityOnTool.set(0,0,20);
+          velocityOnTool = firstVelocityOnTool;
+
+
+          isVelocityinXAllowed = 0; 
+          isVelocityinZAllowed = 1;
+
+          // xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+
+          initTargetPos.set(7.5,1,42.5); // Only this will change here for the corner
+         
+    }  
+
+    // Rule 4: for slide left arm with horizotal part feature 
   
-    else  if  ( ( (manipulationsPerSample * 1) <= simulationCount ) && (simulationCount < (manipulationsPerSample * 2 ) )   )  
+    else  if  ( ( (manipulationsPerSample * 3) <= simulationCount ) && (simulationCount < (manipulationsPerSample * 4 ) )   )  
 
      {
 
@@ -292,16 +366,60 @@ double MyController::onAction(ActionEvent &evt) {
           // zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
 
-          initTargetPos.set(6,1,48);
+          initTargetPos.set(-18,1,42.5); // Only this will change here for the horizontal part
     
           
     }
 
-        // for pull arm diagonally with corner feature 
-    else if ( ( (manipulationsPerSample * 2)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 3))  ) {
+    // Rule 5: for slide left arm with vertical part feature 
+  
+    else  if  ( ( (manipulationsPerSample * 4) <= simulationCount ) && (simulationCount < (manipulationsPerSample * 5 ) )   )  
+
+     {
+
+    
+          firstVelocityOnTool.set(-20,0,0);
+          velocityOnTool = firstVelocityOnTool;
+
+          isVelocityinXAllowed = 1; 
+          isVelocityinXAllowed = 0;
+
+          xVelocityVariance = -20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          // zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
 
-          firstVelocityOnTool.set(-20,0,20);
+          initTargetPos.set(7.5,1,55); // Only this will change here for the vertical part
+    
+          
+    }
+
+    // Rule 6: for slide left arm with corner feature 
+  
+    else  if  ( ( (manipulationsPerSample * 5) <= simulationCount ) && (simulationCount < (manipulationsPerSample * 6 ) )   )  
+
+     {
+
+    
+          firstVelocityOnTool.set(-20,0,0);
+          velocityOnTool = firstVelocityOnTool;
+
+          isVelocityinXAllowed = 1; 
+          isVelocityinXAllowed = 0;
+
+          xVelocityVariance = -20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          // zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+
+          initTargetPos.set(7.5,1,42.5); // Only this will change here for the corner
+           
+    }
+
+
+    // Rule 7: for pull arm diagonally with horizontal part feature! 
+    else if ( ( (manipulationsPerSample * 6)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 7))  ) {
+
+
+          firstVelocityOnTool.set(-30,0,20);
           velocityOnTool = firstVelocityOnTool;
 
           isVelocityinXAllowed = 1; 
@@ -310,14 +428,53 @@ double MyController::onAction(ActionEvent &evt) {
           xVelocityVariance = -20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
           zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
-          initTargetPos.set(6,1,48);
+          initTargetPos.set(-15,1,42.5);
   
           
     }
 
+    // Rule 8: for pull arm diagonally with vertical part feature! 
+    else if ( ( (manipulationsPerSample * 7)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 8))  ) {
+
+
+          firstVelocityOnTool.set(-30,0,20);
+          velocityOnTool = firstVelocityOnTool;
+
+          isVelocityinXAllowed = 1; 
+          isVelocityinXAllowed = 1;
+  
+          xVelocityVariance = -20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+          initTargetPos.set(7.5,1,66);
+  
+          
+    }
+
+
+    // Rule 9: for pull arm diagonally with corner feature! 
+
+    else if ( ( (manipulationsPerSample * 8)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 9))  ) {
+
+
+          firstVelocityOnTool.set(-30,0,20);
+          velocityOnTool = firstVelocityOnTool;
+
+          isVelocityinXAllowed = 1; 
+          isVelocityinXAllowed = 1;
+  
+          xVelocityVariance = -20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+          initTargetPos.set(7.5,1,42.5);
+  
+          
+    }
+
+
     else {
       cout << "The limit of manipulation samples is reached " << endl;
-      exit(0);
+      // exit(0);
     }
 
   }
@@ -396,6 +553,7 @@ double MyController::onAction(ActionEvent &evt) {
      //tool->setLinearVelocity(refVal_X, 0, refVal_Z);  // this is the velocity applied after taking feedback from P-controller.
       
      tool->setLinearVelocity(velocityOnTool.x(), velocityOnTool.y(), velocityOnTool.z() ); // without applying P-Controller. 
+     // tool->addTorque(0,10000,0); // for testing the torque controller.
  
    }
 
@@ -436,12 +594,24 @@ double MyController::onAction(ActionEvent &evt) {
 
         if (myfile.is_open())
           {
+
+            // if( ( ( (manipulationsPerSample * 1) <= simulationCount ) && (simulationCount < (manipulationsPerSample * 2 ) )   ) || ( ( (manipulationsPerSample * 3) <= simulationCount ) && (simulationCount < (manipulationsPerSample * 4 ) )   )     )
+            // {
+            //   targetPos.x(startingTargetPos.x());
+            //   targetPos.z(startingTargetPos.z()); 
+            //   myfile << targetPos.x() << " , " << targetPos.z() << " , " ;
+            // }
+
+            // else{
+            //   box->getPosition(targetPos);
+            //   myfile << targetPos.x() << " , " << targetPos.z() << " , " ;
+            // }
+
             myfile << targetPos.x() << " , " << targetPos.z() << " , " ;
+       
           }
 
 
-
-    
 
         // LOG_MSG((" The displacement from initial position is is : %f %f %f ", targetPos.x()-initTargetPos.x(), targetPos.y()-initTargetPos.y(), targetPos.z()-initTargetPos.z() ));
 
@@ -460,12 +630,59 @@ double MyController::onAction(ActionEvent &evt) {
           }
 
 
+
+
+        while (doesToolRotationReset && !isToolRotationReset && !singleSimulation && !isToolPositionReset  && ( simulationCount < totalSimulations) )
+        {
+           // orientation reset functionality has not been implemented yet!
+
+          Rotation currentToolRot;
+          tool->getRotation(currentToolRot);
+          // LOG_MSG((" Current Tool orientation is : %f %f %f %f ", currentToolRot.qw(), currentToolRot.qx(), currentToolRot.qy(), currentToolRot.qz() ));
+          // LOG_MSG((" Initial Tool orientation is : %f %f %f %f ", initialToolRot.qw(), initialToolRot.qx(), initialToolRot.qy(), initialToolRot.qz() ));
+          // isToolRotationReset = true;
+
+          double* ptr = controlRotation(initialToolRot, currentToolRot,3.0,0.0,1.2);
+          cout << "pid_ori_tool = " << ptr[0] << endl; 
+          tool->addTorque(0,40000 * ptr[0],0);
+
+          if ( abs(ptr[0]) < 0.04 )
+          {
+            cout << "The difference in tool orientation is " << ptr[1] << endl;
+            isToolRotationReset=true;
+          }
+
+          
+        }
+
+
+
+      while (doesTargetRotationReset && !isTargetRotationReset && isToolRotationReset && !singleSimulation && ( simulationCount < totalSimulations) )
+        {
+           // orientation reset functionality has not been implemented yet!
+
+          Rotation currentTargetRot;
+          tool->getRotation(currentTargetRot);
+      
+          double* ptr = controlRotation(initialTargetRot, currentTargetRot,3.0,0.0,1.2);
+          cout << "pid_ori_target = " << ptr[0] << endl; 
+          tool->addTorque(0,40000 * ptr[0],0);
+
+          if ( abs(ptr[0]) < 0.02 )
+          {
+            cout << "The difference in target orientation is " << ptr[1] << endl;
+            isTargetRotationReset = true;
+          }
+          
+        }
+
+
         // // I want the position of tool to reset, once it has come to rest after hitting the target object. 
 
 
         // // Please comment out the following four lines for reseting tool to original position 
 
-        while  ( doesToolPositionReset && !singleSimulation && !isToolPositionReset  && ( simulationCount < totalSimulations) )
+        while  ( doesToolPositionReset && !singleSimulation && !isToolPositionReset  && ( simulationCount < totalSimulations) && isToolRotationReset && isTargetRotationReset)
         {
 
             // tool->setPosition(initToolPos.x(), initToolPos.y(), initToolPos.z()); // reset the tool position.
@@ -486,7 +703,7 @@ double MyController::onAction(ActionEvent &evt) {
             double* ptr1 = controlPosition(initToolPos, toolPos, 1.0,0.0, 0.7);
             tool->setLinearVelocity( ptr1[0] , 0, ptr1[1]);
 
-            if ( abs(differenceInPos.x()) < 0.1 && abs(differenceInPos.z()) < 0.1)
+            if ( abs(differenceInPos.x()) < 0.2 && abs(differenceInPos.z()) < 0.2)
             {
 
               // LOG_MSG((" Tool reset at : %f %f %f ", toolPos.x(), toolPos.y(), toolPos.z() ));
@@ -506,7 +723,7 @@ double MyController::onAction(ActionEvent &evt) {
 
          // // Please comment out the following four lines for reseting target to original position
 
-        while (doesTargetPositionReset && !singleSimulation && !isTargetPositionReset && isToolPositionReset && ( simulationCount < totalSimulations))
+        while (doesTargetPositionReset && !singleSimulation && !isTargetPositionReset && isToolPositionReset && ( simulationCount < totalSimulations) && isTargetRotationReset  )
         {
 
     
@@ -548,17 +765,6 @@ double MyController::onAction(ActionEvent &evt) {
 
         }
 
-        if (isToolRotationReset)
-        {
-           // orientation reset functionality has not been implemented yet!
-          
-
-        }
-
-        if (isTargetRotationReset)
-        {
-            // orientation reset functionality has not been implemented yet!
-        }
 
          
          if ( simulationCount == totalSimulations )
@@ -637,6 +843,9 @@ void MyController::onCollision(CollisionEvent &evt) {
       first=false;
       isToolPositionReset=false;
       isTargetPositionReset=false;
+
+      isToolRotationReset=false;
+      isTargetRotationReset=false;
       
       tool->getLinearVelocity(velocityOfTool);
       //This parameter shall be stored for learning affordances using Bayesian Networks !
