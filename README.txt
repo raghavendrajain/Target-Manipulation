@@ -2,10 +2,14 @@ The code enables robot to manipulate target object several times using different
 A sample means using a combination of Action and Functional feature. 
 A total of 3 samples are used in this code. 
 
+I implemented my software in SIGVerse which enables target manipulation using different pre-programmed actions and knowledge of functional feartures.
+Robot manipulates target using three actions 1: Contract Arm, 2: Slide Left 3: Pull Diagonally with three functional features i) Horizontal part ii) Vertical part iii)corner.
 
-The visualization of tool and its dynamics shape is different. That is the problem.
-Otherwise, its a SUCCESS too!
+The code enables robot to manipulate target object several times using different samples, simulatenouly. A sample means using a combination of Action and Functional feature. For each sample six manipulation trials are taken. In each manipulation trial, a force of a varying magnitude is applied to the tool.
+Position and orientation control of tool and target object is used, after the object comes to rest. 
 
+
+The visualization of tool and its dynamics shape is different. That is the only problem.
 
 --------------------------------
 How to run the code ?
