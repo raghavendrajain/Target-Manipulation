@@ -40,7 +40,7 @@
 
    <set-attr-value name="x" value="-5.0"/>
    <set-attr-value name="y" value="1.0"/>
-   <set-attr-value name="z" value="42.5"/>
+   <set-attr-value name="z" value="44.0"/>
 
   
    <set-attr-value name="qw" value="0.707"/>
