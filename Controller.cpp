@@ -27,11 +27,15 @@ private:
 // Setting it is important to apply updates to in subseqent trials. 
 
 Vector3d firstVelocityOnTool;
+Vector3d firstForceOnTool;
 
 
 bool multipleSamples = true ; // yes if more than one sample is taken.
 int numberOfSamples = 9 ;     // set the number of samples for manipulations. the rules for each sample are set below!
-int manipulationsPerSample = 1; // if multiple samples are taken sequentially, the set the number of manipulations per sample.
+int manipulationsPerSample = 27; // if multiple samples are taken sequentially, the set the number of manipulations per sample.
+
+bool applyVelocity = false;
+bool applyForce = true; 
 
 
 // please set this only if multipleSamples is false!
@@ -40,8 +44,6 @@ bool singleSimulation = 0; // if changed to 0, the simulation keeps running. if 
 int  no_of_simulation = 5; // this works only if singleSimulation is false!
 
 int totalSimulations =   (multipleSamples)  ? ( numberOfSamples * manipulationsPerSample ) : no_of_simulation  ; // that's the total number of times simulation shall run. 
-
-
 
 
 static bool isVelocityinXAllowed ;  // for "Contract Arm " action, only Z component of velocity is set. But change it if you want to apply "Push Diagonally" or "Slide Left"
@@ -56,16 +58,27 @@ static bool doesToolPositionReset;  // reset the tool position to the position s
 static bool doesTargetRotationReset; // reset the target position to the position set in XML world file 
 static bool doesToolRotationReset;  // reset the tool position to the position set in XML world file   
 
+
+
 // static bool isTargetRotationReset;  // reset the target rotation to the rotation set in XML world file // CURRENTLY: functionality not implemented!
 // static bool isToolRotationReset;    // reset the target rotation to the rotation set in XML world file // CURRENTLY: functionality not implemented!
 
+static bool isForceinXAllowed ;  // for "Contract Arm " action, only Z component of force is set. But change it if you want to apply "Push Diagonally" or "Slide Left"
+static bool isForceinZAllowed ; // for "Contract Arm " action, only Z component of force is set
+
+static double xForceVariance; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+static double zForceVariance;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
 
 
 static Vector3d velocityOnTool;  // the first manipulation trial is performed using the preset velocity. then it is updated for each subseqent trial.
+static Vector3d forceOnTool; // the first manipulation trial is performed using the preset force. then it is updated for each subseqent trial.
 
 static int messageCount;
 static int onActionCount;
+
+int actionNumber;
+int functionalFeature;
 
 int flag;
 
@@ -155,6 +168,7 @@ void MyController::onInit(InitEvent &evt) {
   if (singleSimulation && !multipleSamples)
   {
      firstVelocityOnTool.set(0,0,20);  // for "Contract Arm" action
+     firstForceOnTool.set(0,0,10000);
      
   }
 
@@ -164,13 +178,23 @@ void MyController::onInit(InitEvent &evt) {
 
   {
 
-     firstVelocityOnTool.set(-20,0,20);  // for "Contract Arm" action
+     firstVelocityOnTool.set(-20,0,20);  // for "Pull Diagonally" action
+     firstForceOnTool.set(-10000,0,10000);
 
      isVelocityinXAllowed = 1; // for "Contract Arm " action, only Z component of velocity is set. But change it if you want to apply "Push Diagonally" or "Slide Left"
      isVelocityinZAllowed = 1; // for "Contract Arm " action, only Z component of velocity is set
 
      xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
      zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+
+     isForceinXAllowed = 1;
+     isForceinZAllowed = 1;
+
+     xForceVariance = 2000;
+     zForceVariance = 2000;
+
+
 
      doesTargetPositionReset = 1; // reset the target position to the position set in XML world file 
      doesToolPositionReset = 1;   // reset the tool position to the position set in XML world file   
@@ -192,8 +216,12 @@ void MyController::onInit(InitEvent &evt) {
 
 
   velocityOnTool = firstVelocityOnTool;
+  forceOnTool    = firstForceOnTool; 
 
-  tool->setLinearVelocity(velocityOnTool.x(), velocityOnTool.y(), velocityOnTool.z() );
+  /* When force is being applied, comment the line below */
+  // tool->setLinearVelocity(velocityOnTool.x(), velocityOnTool.y(), velocityOnTool.z() );
+
+  tool->addForce(forceOnTool.x(), forceOnTool.y(), forceOnTool.z());
 
   setPoint_X = velocityOnTool.x();  // this is the desired velocity in X
   setPoint_Z=  velocityOnTool.z();  // this is the desired velocity in Z
@@ -228,8 +256,18 @@ void MyController::onInit(InitEvent &evt) {
 
   if (myfile.is_open())
   {
-     myfile << "InitialToolPosX" << " , " << "InitialToolPosZ" << " , " << "InitialTargetPosX" << " , " << "InitialTargetPosZ" << " , ";
-     myfile <<  "xSetVelcoity_tool" << " , " << "zSetVelocity_tool" << " , "; 
+     myfile << "Action" << " , " << "Functional Feature" << "  , " << "InitialToolPosX" << " , " << "InitialToolPosZ" << " , " << "InitialTargetPosX" << " , " << "InitialTargetPosZ" << " , ";
+     
+     if (applyVelocity && !applyForce)
+     {
+        myfile <<  "xSetVelcoity_tool" << " , " << "zSetVelocity_tool" << " , "; 
+     }
+
+     if(applyForce && !applyVelocity)
+     {
+        myfile <<  "xSetForce_tool" << " , " << "zSetForce_tool" << " , "; 
+     }
+     
      myfile << "xVelAtContact_Tool" << " , " << "zVelAtContact_Tool" << " , " << "xVelAtContact_Target" << " , " << "zVelAtContact_Target" <<  " , ";
      myfile <<  "targetFinalPosX" << " , " << "targetFinalPosZ"  << " , " << "targetDisplacement_X" << " , " << "targetDisplacement_Z"   <<"\n" ; 
 
@@ -238,6 +276,12 @@ void MyController::onInit(InitEvent &evt) {
      myfile << initToolPos.x() << " , "  << initToolPos.z() << " , ";
      myfile << initTargetPos.x() << " , " << initTargetPos.z() << " , " ;
 
+  }
+
+  if (applyForce && applyVelocity)
+  {
+    cout << "Both force and velocity are being appled. This program shall abort" << endl; 
+    exit(0);
   }
 
 
@@ -290,8 +334,18 @@ double MyController::onAction(ActionEvent &evt) {
 
           // cout << " first loop simulation count " << simulationCount <<  endl; 
 
-          firstVelocityOnTool.set(0,0,20);
-          velocityOnTool = firstVelocityOnTool;
+          actionNumber = 1; 
+          functionalFeature = 1; 
+
+          if ( simulationCount == 0)
+          {
+               firstVelocityOnTool.set(0,0,20);
+               velocityOnTool = firstVelocityOnTool;
+
+              firstForceOnTool.set(0,0,10000);
+              forceOnTool = firstForceOnTool; 
+
+          }
 
 
           isVelocityinXAllowed = 0; 
@@ -301,7 +355,14 @@ double MyController::onAction(ActionEvent &evt) {
           zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
 
-          initTargetPos.set(-5,1,42.5);
+          isForceinXAllowed = 0;
+          isForceinZAllowed = 1;
+
+          xForceVariance = 2000;
+          zForceVariance = 2000;
+
+
+          initTargetPos.set(-5,1,44.0);
          
     }
 
@@ -312,8 +373,20 @@ double MyController::onAction(ActionEvent &evt) {
 
           // cout << " first loop simulation count " << simulationCount <<  endl; 
 
+        actionNumber = 1; 
+        functionalFeature = 2; 
+
+
+        if (simulationCount == (manipulationsPerSample *1 ))
+        {
+
+
           firstVelocityOnTool.set(0,0,20);
           velocityOnTool = firstVelocityOnTool;
+
+          firstForceOnTool.set(0,0,10000);
+          forceOnTool = firstForceOnTool; 
+        }
 
 
           isVelocityinXAllowed = 0; 
@@ -322,8 +395,14 @@ double MyController::onAction(ActionEvent &evt) {
           // xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
           zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
+          isForceinXAllowed = 0;
+          isForceinZAllowed = 1;
 
-          initTargetPos.set(7.5,1,68); // Only this will change here!
+          xForceVariance = 2000;
+          zForceVariance = 2000;
+
+
+          initTargetPos.set(6.0,1,68); // Only this will change here!
          
     }
 
@@ -334,8 +413,19 @@ double MyController::onAction(ActionEvent &evt) {
 
           // cout << " first loop simulation count " << simulationCount <<  endl; 
 
+           actionNumber = 1; 
+           functionalFeature = 3; 
+
+         if (simulationCount == (manipulationsPerSample * 2 ))
+        {
+
           firstVelocityOnTool.set(0,0,20);
           velocityOnTool = firstVelocityOnTool;
+
+          firstForceOnTool.set(0,0,10000);
+          forceOnTool = firstForceOnTool; 
+
+        }
 
 
           isVelocityinXAllowed = 0; 
@@ -344,8 +434,14 @@ double MyController::onAction(ActionEvent &evt) {
           // xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
           zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
+          isForceinXAllowed = 0;
+          isForceinZAllowed = 1;
 
-          initTargetPos.set(7.5,1,42.5); // Only this will change here for the corner
+          xForceVariance = 2000;
+          zForceVariance = 2000;
+
+
+          initTargetPos.set( 6.0, 1, 44.0 ); // Only this will change here for the corner
          
     }  
 
@@ -355,9 +451,19 @@ double MyController::onAction(ActionEvent &evt) {
 
      {
 
+         actionNumber = 2; 
+         functionalFeature = 1; 
+
+      if (simulationCount == (manipulationsPerSample * 3 ))
+        {
     
           firstVelocityOnTool.set(-20,0,0);
           velocityOnTool = firstVelocityOnTool;
+
+          firstForceOnTool.set(-10000,0,0);
+          forceOnTool = firstForceOnTool; 
+
+        }
 
           isVelocityinXAllowed = 1; 
           isVelocityinXAllowed = 0;
@@ -365,8 +471,14 @@ double MyController::onAction(ActionEvent &evt) {
           xVelocityVariance = -20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
           // zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 0;
 
-          initTargetPos.set(-18,1,42.5); // Only this will change here for the horizontal part
+          xForceVariance = -2000;
+          zForceVariance = 2000;
+
+
+          initTargetPos.set(-18,1,44.0); 
     
           
     }
@@ -377,9 +489,19 @@ double MyController::onAction(ActionEvent &evt) {
 
      {
 
+       actionNumber = 2; 
+       functionalFeature = 2; 
+
+
+      if (simulationCount == (manipulationsPerSample * 4 ))
+        {
     
           firstVelocityOnTool.set(-20,0,0);
           velocityOnTool = firstVelocityOnTool;
+
+          firstForceOnTool.set(-10000,0,0);
+          forceOnTool = firstForceOnTool; 
+       }
 
           isVelocityinXAllowed = 1; 
           isVelocityinXAllowed = 0;
@@ -388,7 +510,14 @@ double MyController::onAction(ActionEvent &evt) {
           // zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
 
-          initTargetPos.set(7.5,1,55); // Only this will change here for the vertical part
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 0;
+
+          xForceVariance = -2000;
+          zForceVariance = 2000;
+
+
+          initTargetPos.set(6.0,1,55); // Only this will change here for the vertical part
     
           
     }
@@ -399,9 +528,19 @@ double MyController::onAction(ActionEvent &evt) {
 
      {
 
+       actionNumber = 2; 
+       functionalFeature = 3; 
+
     
+      if (simulationCount == (manipulationsPerSample * 5 ))
+        {
           firstVelocityOnTool.set(-20,0,0);
           velocityOnTool = firstVelocityOnTool;
+
+
+          firstForceOnTool.set(-10000,0,0);
+          forceOnTool = firstForceOnTool; 
+        }
 
           isVelocityinXAllowed = 1; 
           isVelocityinXAllowed = 0;
@@ -409,8 +548,14 @@ double MyController::onAction(ActionEvent &evt) {
           xVelocityVariance = -20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
           // zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 0;
 
-          initTargetPos.set(7.5,1,42.5); // Only this will change here for the corner
+          xForceVariance = -2000;
+          zForceVariance = 2000;
+
+
+          initTargetPos.set(6.0,1,44.0); // Only this will change here for the corner
            
     }
 
@@ -418,17 +563,34 @@ double MyController::onAction(ActionEvent &evt) {
     // Rule 7: for pull arm diagonally with horizontal part feature! 
     else if ( ( (manipulationsPerSample * 6)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 7))  ) {
 
+         actionNumber = 3; 
+         functionalFeature = 1; 
+
+
+         if (simulationCount == (manipulationsPerSample * 6 ))
+        {
+
 
           firstVelocityOnTool.set(-30,0,20);
           velocityOnTool = firstVelocityOnTool;
 
+          firstForceOnTool.set(-10000,0, 10000);
+          forceOnTool = firstForceOnTool; 
+
+        }
           isVelocityinXAllowed = 1; 
           isVelocityinXAllowed = 1;
   
           xVelocityVariance = -20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
           zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
-          initTargetPos.set(-15,1,42.5);
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 1;
+
+          xForceVariance = -2000;
+          zForceVariance = 2000;
+
+          initTargetPos.set(-15,1,44.0);
   
           
     }
@@ -436,9 +598,21 @@ double MyController::onAction(ActionEvent &evt) {
     // Rule 8: for pull arm diagonally with vertical part feature! 
     else if ( ( (manipulationsPerSample * 7)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 8))  ) {
 
+           actionNumber = 3; 
+           functionalFeature = 2; 
+
+        if (simulationCount == (manipulationsPerSample * 7 ))
+        {
+
 
           firstVelocityOnTool.set(-30,0,20);
           velocityOnTool = firstVelocityOnTool;
+
+
+          firstForceOnTool.set(-10000,0, 10000);
+          forceOnTool = firstForceOnTool; 
+
+        }
 
           isVelocityinXAllowed = 1; 
           isVelocityinXAllowed = 1;
@@ -446,7 +620,13 @@ double MyController::onAction(ActionEvent &evt) {
           xVelocityVariance = -20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
           zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
-          initTargetPos.set(7.5,1,66);
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 1;
+
+          xForceVariance = -2000;
+          zForceVariance = 2000;
+
+          initTargetPos.set(6.0,1,66);
   
           
     }
@@ -456,9 +636,18 @@ double MyController::onAction(ActionEvent &evt) {
 
     else if ( ( (manipulationsPerSample * 8)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 9))  ) {
 
+           actionNumber = 3; 
+           functionalFeature = 3; 
 
+         if (simulationCount == (manipulationsPerSample * 8 ))
+        {
           firstVelocityOnTool.set(-30,0,20);
           velocityOnTool = firstVelocityOnTool;
+
+          firstForceOnTool.set(-10000,0, 10000);
+          forceOnTool = firstForceOnTool; 
+
+        }
 
           isVelocityinXAllowed = 1; 
           isVelocityinXAllowed = 1;
@@ -466,7 +655,13 @@ double MyController::onAction(ActionEvent &evt) {
           xVelocityVariance = -20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
           zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
 
-          initTargetPos.set(7.5,1,42.5);
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 1;
+
+          xForceVariance = -2000;
+          zForceVariance = 2000;
+
+          initTargetPos.set(6.0,1,44.0);
   
           
     }
@@ -495,6 +690,12 @@ double MyController::onAction(ActionEvent &evt) {
         tool->getPosition(startingToolPos);
         LOG_MSG((" Starting position of tool is : %f %f %f ", startingToolPos.x(), startingToolPos.y(), startingToolPos.z() ));
 
+        if (myfile.is_open())
+
+          {
+            myfile << actionNumber << " , " << functionalFeature << " , " ;
+          }
+
         if( !doesToolPositionReset && !singleSimulation && !first  )
 
         {
@@ -502,6 +703,7 @@ double MyController::onAction(ActionEvent &evt) {
            if (myfile.is_open())
 
           {
+
             
             myfile << startingToolPos.x() << " , " << startingToolPos.z() << " , " ;
           }
@@ -529,10 +731,18 @@ double MyController::onAction(ActionEvent &evt) {
 
 
         LOG_MSG(("Setpoint Velocity on tool object is : %f %f %f ", velocityOnTool.x(), velocityOnTool.y(), velocityOnTool.z() ));
-        if (myfile.is_open())
+        if (myfile.is_open() && applyVelocity && !applyForce)
         {
           myfile << velocityOnTool.x() << " , " <<velocityOnTool.z() << " , "; 
         }
+
+        LOG_MSG(("Setpoint force on tool is : %f %f %f ", forceOnTool.x(), forceOnTool.y(), forceOnTool.z() ));
+        if (myfile.is_open() && applyForce && !applyVelocity )
+        {
+          myfile << forceOnTool.x() << " , " << forceOnTool.z() << " , "; 
+        }
+
+
 
 
         flag=0;
@@ -553,6 +763,8 @@ double MyController::onAction(ActionEvent &evt) {
      //tool->setLinearVelocity(refVal_X, 0, refVal_Z);  // this is the velocity applied after taking feedback from P-controller.
       
      tool->setLinearVelocity(velocityOnTool.x(), velocityOnTool.y(), velocityOnTool.z() ); // without applying P-Controller. 
+
+     // tool->addForce(forceOnTool.x(), forceOnTool.y(), forceOnTool.z()  );
      // tool->addTorque(0,10000,0); // for testing the torque controller.
  
    }
@@ -881,10 +1093,21 @@ void MyController::onCollision(CollisionEvent &evt) {
 
           }
           
-          
-
-
           velocityOnTool.set( firstVelocityOnTool.x() + v_x, 0, firstVelocityOnTool.z() + v_z );   
+
+          double f_x, f_z; 
+
+          if (isForceinXAllowed)
+          {
+            f_x = rand() % int(xForceVariance);
+          }
+
+          if(isVelocityinZAllowed)
+          {
+            f_z = rand() % int(zForceVariance);
+          }  
+
+          forceOnTool.set( firstForceOnTool.x() + f_x, 0, firstForceOnTool.z() + f_z ); 
 
 
 
