@@ -32,7 +32,7 @@ Vector3d firstForceOnTool;
 
 bool multipleSamples = true ; // yes if more than one sample is taken.
 int numberOfSamples = 9 ;     // set the number of samples for manipulations. the rules for each sample are set below!
-int manipulationsPerSample = 6; // if multiple samples are taken sequentially, the set the number of manipulations per sample.
+int manipulationsPerSample = 1; // if multiple samples are taken sequentially, the set the number of manipulations per sample.
 
 bool applyVelocity = false;
 bool applyForce = true; 
@@ -311,10 +311,10 @@ double MyController::onAction(ActionEvent &evt) {
 
   // cout << "The simulation count in beginning is " << simulationCount << endl;
 
-  double  K_p_tool= 5;
-  double  K_i_tool= 0.4;
+  double  K_p_tool= 7;
+  double  K_i_tool= 1.0;
   double  K_d_tool= 2.2;
-  double  gain_tool = 50000;
+  double  gain_tool = 100000;
 
 
 
@@ -380,7 +380,7 @@ double MyController::onAction(ActionEvent &evt) {
           zForceVariance = 2000;
 
 
-          initTargetPos.set(-15,1,50.0);
+          initTargetPos.set(-50,1,50.0);
          
     }
 
@@ -420,7 +420,7 @@ double MyController::onAction(ActionEvent &evt) {
           zForceVariance = 2000;
 
 
-          initTargetPos.set(0.0,1,55); // Only this will change here!
+          initTargetPos.set(-10.0,1,55); // Only this will change here!
          
     }
 
@@ -458,7 +458,7 @@ double MyController::onAction(ActionEvent &evt) {
           xForceVariance = 2000;
           zForceVariance = 2000;
 
-          initTargetPos.set( 0.0, 1, 50.0 ); // Only this will change here for the corner
+          initTargetPos.set( -10.0, 1, 50.0 ); // Only this will change here for the corner
           // initTargetPos.set( 10.0, 1, 47.0 ); // Only this will change here for the corner
 
           // static Rotation initialToolRot( 0.9239557,  0.0,  0.3824995,  0.0 );
@@ -508,7 +508,7 @@ double MyController::onAction(ActionEvent &evt) {
           zForceVariance = 2000;
 
 
-          initTargetPos.set(-6,1,50.0); 
+          initTargetPos.set(-15,1,50.0); 
     
           
     }
@@ -547,7 +547,7 @@ double MyController::onAction(ActionEvent &evt) {
           zForceVariance = 2000;
 
 
-          initTargetPos.set(0.0,1,55); // Only this will change here for the vertical part
+          initTargetPos.set(-10.0,1,90); // Only this will change here for the vertical part
     
           
     }
@@ -585,7 +585,7 @@ double MyController::onAction(ActionEvent &evt) {
           zForceVariance = 2000;
 
 
-          initTargetPos.set(0.0,1,50.0); // Only this will change here for the corner
+          initTargetPos.set(-10.0,1,50.0); // Only this will change here for the corner
 
           // initTargetPos.set(4.0,1,40.0); // Only this will change here for the corner
            
@@ -622,7 +622,7 @@ double MyController::onAction(ActionEvent &evt) {
           xForceVariance = -2000;
           zForceVariance = 2000;
 
-          initTargetPos.set(-45,1,50.0);
+          initTargetPos.set(-70,1,50.0);
 
           K_p_tool= 7;
           K_i_tool= 0.4;
@@ -664,7 +664,7 @@ double MyController::onAction(ActionEvent &evt) {
           xForceVariance = -2000;
           zForceVariance = 2000;
 
-          initTargetPos.set(0.0,1,75);
+          initTargetPos.set(-10.0,1,110);
 
           K_p_tool= 7;
           K_i_tool= 0.4;
@@ -704,7 +704,7 @@ double MyController::onAction(ActionEvent &evt) {
           xForceVariance = -2000;
           zForceVariance = 2000;
 
-          initTargetPos.set(0.0,1,50.0);
+          initTargetPos.set(-10.0,1,50.0);
 
           K_p_tool= 7;
           K_i_tool= 0.4;
