@@ -1,9 +1,11 @@
 The code enables robot to manipulate target object several times using different samples, simulatenouly. 
 A sample means using a combination of Action and Functional feature. 
-A total of 3 samples are used in this code. 
+A total of 15 samples are used in this code. 
 
 I implemented my software in SIGVerse which enables target manipulation using different pre-programmed actions and knowledge of functional feartures.
-Robot manipulates target using three actions 1: Contract Arm, 2: Slide Left 3: Pull Diagonally with three functional features i) Horizontal part ii) Vertical part iii)corner.
+Robot manipulates target using five actions 1: Contract Arm, 2: Slide Left 3: Pull Diagonally with three functional features i) Horizontal part ii) Vertical part iii)corner.
+4. Slide Right 5. Pull Diagonally-2. 
+
 
 The code enables robot to manipulate target object several times using different samples, simulatenouly. A sample means using a combination of Action and Functional feature. For each sample six manipulation trials are taken. In each manipulation trial, a force of a varying magnitude is applied to the tool.
 Position and orientation control of tool and target object is used, after the object comes to rest. 
