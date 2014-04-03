@@ -124,7 +124,7 @@
 	    <!-- <fieldValue name='centerOfMass' value='5.00 0.0 0.0' /> -->
 	    <Transform>
 	      <Shape>
-		<Box size="2 2 2"/>
+		<Box size="4 4 4"/>
 		<Appearance>
 		  <Material  diffuseColor='0.6 0.6 0.1' />
 		</Appearance>
@@ -142,10 +142,10 @@
 	      <!-- <fieldValue name='centerOfMass' value='0.00 0.0 6.0' /> -->
 	      <fieldValue name='mass' value='6.5' />
 	    <!-- <Transform > -->
-	    <Transform translation='0 0 16'>
+	    <Transform translation='0 0 101'>
 	    <!-- <Transform rotation='0.0 0.0 1.0 1.57'> -->
 		<Shape>
-		  <Box size="2 2 60"/>
+		  <Box size="4 4 200"/>
 		  <Appearance>
 		    <Material  diffuseColor='1.0 0.0 0.501' />
 		  </Appearance>
@@ -164,10 +164,10 @@
 	      <!-- <fieldValue name='centerOfMass' value='6.00 0.0 0.0' /> -->
 	      <fieldValue name='mass' value='6.5' />
 	    <!-- <Transform > -->
-	    <Transform translation='-16 0 0'>
+	    <Transform translation='0 0 0'>
 	    <!-- <Transform rotation='0.0 0.0 1.0 1.57'> -->
 		<Shape>
-		  <Box size="60 2 2"/>
+		  <Box size="200 4 4"/>
 		  <Appearance>
 		    <Material  diffuseColor='1.0 0.0 0.501' />
 		  </Appearance>
