@@ -29,10 +29,9 @@ private:
 Vector3d firstVelocityOnTool;
 Vector3d firstForceOnTool;
 
-
 bool multipleSamples = true ; // yes if more than one sample is taken.
-int numberOfSamples = 9 ;     // set the number of samples for manipulations. the rules for each sample are set below!
-int manipulationsPerSample = 1; // if multiple samples are taken sequentially, the set the number of manipulations per sample.
+int numberOfSamples = 15 ;     // set the number of samples for manipulations. the rules for each sample are set below!
+int manipulationsPerSample = 120; // if multiple samples are taken sequentially, the set the number of manipulations per sample.
 
 bool applyVelocity = false;
 bool applyForce = true; 
@@ -158,6 +157,8 @@ static double previousTime=0;
 double currentTime;
 double timeDiff=0;
 
+static int targetCount = 1;
+
           
 
 
@@ -265,7 +266,7 @@ void MyController::onInit(InitEvent &evt) {
 
   if (myfile.is_open())
   {
-     myfile << "Action" << " , " << "Functional Feature" << "  , " << "InitialToolPosX" << " , " << "InitialToolPosZ" << " , " << "InitialTargetPosX" << " , " << "InitialTargetPosZ" << " , ";
+     myfile << "InitialToolPosX" << " , " << "InitialToolPosZ" << " , " << "InitialTargetPosX" << " , " << "InitialTargetPosZ" << " , " << "Action" << " , " << "Functional Feature" << "  , ";
      
      if (applyVelocity && !applyForce)
      {
@@ -282,7 +283,8 @@ void MyController::onInit(InitEvent &evt) {
 
      myfile << setprecision(2) << std::fixed;
 
-     myfile << initToolPos.x() << " , "  << initToolPos.z() << " , ";
+     myfile << initToolPos.x() << " , "  << initToolPos.
+     z() << " , ";
      myfile << initTargetPos.x() << " , " << initTargetPos.z() << " , " ;
 
   }
@@ -311,10 +313,10 @@ double MyController::onAction(ActionEvent &evt) {
 
   // cout << "The simulation count in beginning is " << simulationCount << endl;
 
-  double  K_p_tool= 7;
+  double  K_p_tool= 9;
   double  K_i_tool= 1.0;
-  double  K_d_tool= 2.2;
-  double  gain_tool = 100000;
+  double  K_d_tool= 4.2;
+  double  gain_tool = 140000;
 
 
 
@@ -360,7 +362,7 @@ double MyController::onAction(ActionEvent &evt) {
                firstVelocityOnTool.set(0,0,20);
                velocityOnTool = firstVelocityOnTool;
 
-              firstForceOnTool.set(0,0,5000);
+              firstForceOnTool.set(0,0,3000);
               forceOnTool = firstForceOnTool; 
 
           }
@@ -402,7 +404,7 @@ double MyController::onAction(ActionEvent &evt) {
           firstVelocityOnTool.set(0,0,20);
           velocityOnTool = firstVelocityOnTool;
 
-          firstForceOnTool.set(0,0,5000);
+          firstForceOnTool.set(0,0,3000);
           forceOnTool = firstForceOnTool; 
         }
 
@@ -440,7 +442,7 @@ double MyController::onAction(ActionEvent &evt) {
           firstVelocityOnTool.set(0,0,20);
           velocityOnTool = firstVelocityOnTool;
 
-          firstForceOnTool.set(0,0,5000);
+          firstForceOnTool.set(0,0,3000);
           forceOnTool = firstForceOnTool; 
 
         }
@@ -459,7 +461,7 @@ double MyController::onAction(ActionEvent &evt) {
           zForceVariance = 2000;
 
           initTargetPos.set( -10.0, 1, 50.0 ); // Only this will change here for the corner
-          // initTargetPos.set( 10.0, 1, 47.0 ); // Only this will change here for the corner
+          // initTargetPos.set( 0.0, 1, 55.0 ); // Only this will change here for the corner, when the tool is on 45degree to original..s
 
           // static Rotation initialToolRot( 0.9239557,  0.0,  0.3824995,  0.0 );
 
@@ -490,7 +492,7 @@ double MyController::onAction(ActionEvent &evt) {
           firstVelocityOnTool.set(-20,0,0);
           velocityOnTool = firstVelocityOnTool;
 
-          firstForceOnTool.set(-5000,0,0);
+          firstForceOnTool.set(-3000,0,0);
           forceOnTool = firstForceOnTool; 
 
         }
@@ -529,7 +531,7 @@ double MyController::onAction(ActionEvent &evt) {
           firstVelocityOnTool.set(-20,0,0);
           velocityOnTool = firstVelocityOnTool;
 
-          firstForceOnTool.set(-5000,0,0);
+          firstForceOnTool.set(-3000,0,0);
           forceOnTool = firstForceOnTool; 
        }
 
@@ -568,7 +570,7 @@ double MyController::onAction(ActionEvent &evt) {
           velocityOnTool = firstVelocityOnTool;
 
 
-          firstForceOnTool.set(-5000,0,0);
+          firstForceOnTool.set(-3000,0,0);
           forceOnTool = firstForceOnTool; 
         }
 
@@ -603,10 +605,10 @@ double MyController::onAction(ActionEvent &evt) {
         {
 
 
-          firstVelocityOnTool.set(-30,0,20);
+          firstVelocityOnTool.set(-20,0,20);
           velocityOnTool = firstVelocityOnTool;
 
-          firstForceOnTool.set(-5000,0, 5000);
+          firstForceOnTool.set(-3000,0, 3000);
           forceOnTool = firstForceOnTool; 
 
         }
@@ -624,10 +626,10 @@ double MyController::onAction(ActionEvent &evt) {
 
           initTargetPos.set(-70,1,50.0);
 
-          K_p_tool= 7;
-          K_i_tool= 0.4;
+          K_p_tool= 9;
+          K_i_tool= 1.4;
           K_d_tool= 4;
-          gain_tool = 60000;
+          gain_tool = 150000;
   
   
           
@@ -643,11 +645,11 @@ double MyController::onAction(ActionEvent &evt) {
         {
 
 
-          firstVelocityOnTool.set(-30,0,20);
+          firstVelocityOnTool.set(-20,0,20);
           velocityOnTool = firstVelocityOnTool;
 
 
-          firstForceOnTool.set(-5000,0, 5000);
+          firstForceOnTool.set(-3000,0, 3000);
           forceOnTool = firstForceOnTool; 
 
         }
@@ -666,11 +668,10 @@ double MyController::onAction(ActionEvent &evt) {
 
           initTargetPos.set(-10.0,1,110);
 
-          K_p_tool= 7;
-          K_i_tool= 0.4;
+          K_p_tool= 9;
+          K_i_tool= 1.4;
           K_d_tool= 4;
-          gain_tool = 60000;
-  
+          gain_tool = 150000;
           
     }
 
@@ -684,10 +685,10 @@ double MyController::onAction(ActionEvent &evt) {
 
          if (simulationCount == (manipulationsPerSample * 8 ))
         {
-          firstVelocityOnTool.set(-30,0,20);
+          firstVelocityOnTool.set(-20,0,20);
           velocityOnTool = firstVelocityOnTool;
 
-          firstForceOnTool.set(-5000,0, 5000);
+          firstForceOnTool.set(-3000,0, 3000);
           forceOnTool = firstForceOnTool; 
 
         }
@@ -706,13 +707,270 @@ double MyController::onAction(ActionEvent &evt) {
 
           initTargetPos.set(-10.0,1,50.0);
 
-          K_p_tool= 7;
-          K_i_tool= 0.4;
+          K_p_tool= 9;
+          K_i_tool= 1.4;
           K_d_tool= 4;
-          gain_tool = 60000;
+          gain_tool = 150000;
   
           
     }
+
+    // Rule 10: for Slide Arm Right with Horizontal part! 
+
+     else if ( ( (manipulationsPerSample * 9)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 10))  ) {
+
+           actionNumber = 4; 
+           functionalFeature = 1; 
+
+         if (simulationCount == (manipulationsPerSample * 9 ))
+        {
+          firstVelocityOnTool.set(20,0,0);
+          velocityOnTool = firstVelocityOnTool;
+
+          firstForceOnTool.set(3000,0, 0);
+          forceOnTool = firstForceOnTool; 
+
+        }
+
+          isVelocityinXAllowed = 1; 
+          isVelocityinXAllowed = 0;
+  
+          xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 0;
+
+          xForceVariance = 2000;
+          zForceVariance = 2000;
+
+          initTargetPos.set(15.0,1,50.0);
+
+          K_p_tool= 9;
+          K_i_tool= 1.4;
+          K_d_tool= 4;
+          gain_tool = 150000;
+  
+          
+    }
+
+
+
+    // Rule 11: for Slide Arm Right with Vertical! 
+
+     else if ( ( (manipulationsPerSample * 10)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 11))  ) {
+
+           actionNumber = 4; 
+           functionalFeature = 2; 
+
+         if (simulationCount == (manipulationsPerSample * 10 ))
+        {
+          firstVelocityOnTool.set(20,0,0);
+          velocityOnTool = firstVelocityOnTool;
+
+          firstForceOnTool.set(3000,0, 0);
+          forceOnTool = firstForceOnTool; 
+
+        }
+
+          isVelocityinXAllowed = 1; 
+          isVelocityinXAllowed = 0;
+  
+          xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 0;
+
+          xForceVariance = 2000;
+          zForceVariance = 2000;
+
+          initTargetPos.set(10.0,1,90.0);
+
+          K_p_tool= 9;
+          K_i_tool= 1.4;
+          K_d_tool= 4;
+          gain_tool = 150000;
+  
+          
+    }
+
+
+
+
+    // Rule 12: for Slide Arm Right with Corner! 
+
+     else if ( ( (manipulationsPerSample * 11)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 12))  ) {
+
+           actionNumber = 4; 
+           functionalFeature = 3; 
+
+         if (simulationCount == (manipulationsPerSample * 11 ))
+        {
+          firstVelocityOnTool.set(20,0,0);
+          velocityOnTool = firstVelocityOnTool;
+
+          firstForceOnTool.set(3000,0, 0);
+          forceOnTool = firstForceOnTool; 
+
+        }
+
+          isVelocityinXAllowed = 1; 
+          isVelocityinXAllowed = 0;
+  
+          xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 0;
+
+          xForceVariance = 2000;
+          zForceVariance = 2000;
+
+          initTargetPos.set(10.0,1,50.0);
+
+          K_p_tool= 9;
+          K_i_tool= 1.4;
+          K_d_tool= 4;
+          gain_tool = 150000;
+  
+          
+    }
+
+
+
+
+    // Rule 13: for Pull-Diagoally-2 with Horizontal part! 
+
+    else if ( ( (manipulationsPerSample * 12)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 13))  ) {
+
+           actionNumber = 5; 
+           functionalFeature = 1; 
+
+         if (simulationCount == (manipulationsPerSample * 12 ))
+        {
+          firstVelocityOnTool.set(20,0,20);
+          velocityOnTool = firstVelocityOnTool;
+
+          firstForceOnTool.set(3000,0, 3000);
+          forceOnTool = firstForceOnTool; 
+
+        }
+
+          isVelocityinXAllowed = 1; 
+          isVelocityinXAllowed = 0;
+  
+          xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 1;
+
+          xForceVariance = 2000;
+          zForceVariance = 2000;
+
+          initTargetPos.set(70.0,1,50.0);
+
+          K_p_tool= 9;
+          K_i_tool= 1.4;
+          K_d_tool= 4;
+          gain_tool = 150000;
+  
+          
+    }
+
+
+
+
+    // Rule 14: for Pull-Diagonally-2 with Vertical! 
+
+    else if ( ( (manipulationsPerSample * 13)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 14))  ) {
+
+           actionNumber = 5; 
+           functionalFeature = 2; 
+
+         if (simulationCount == (manipulationsPerSample * 13 ))
+        {
+          firstVelocityOnTool.set(20,0,20);
+          velocityOnTool = firstVelocityOnTool;
+
+          firstForceOnTool.set(3000,0, 3000);
+          forceOnTool = firstForceOnTool; 
+
+        }
+
+          isVelocityinXAllowed = 1; 
+          isVelocityinXAllowed = 1;
+  
+          xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 1;
+
+          xForceVariance = 2000;
+          zForceVariance = 2000;
+
+          initTargetPos.set(10.0, 1, 110.0);
+
+          K_p_tool= 9;
+          K_i_tool= 1.4;
+          K_d_tool= 4;
+          gain_tool = 150000;
+  
+          
+    }
+
+
+
+    // Rule 15: for Pull-Diagoanlly-2 with Corner! 
+
+    else if ( ( (manipulationsPerSample * 14)  <= simulationCount ) && (simulationCount < (manipulationsPerSample * 15))  ) {
+
+        actionNumber = 5; 
+        functionalFeature = 3; 
+
+         if (simulationCount == (manipulationsPerSample * 14 ))
+        {
+          firstVelocityOnTool.set(20,0,20);
+          velocityOnTool = firstVelocityOnTool;
+
+          firstForceOnTool.set(3000,0, 3000);
+          forceOnTool = firstForceOnTool; 
+
+        }
+
+          isVelocityinXAllowed = 1; 
+          isVelocityinXAllowed = 1;
+  
+          xVelocityVariance = 20 ; // change the variance in x conmpont of desired velocity. Only works if "isVelocityinXAllowed" flag is set.
+          zVelocityVariance = 20;  // change the variance in Z conmpont of desired velocity. Only works if "isVelocityinZAllowed" flag is set.
+
+          isForceinXAllowed = 1;
+          isForceinZAllowed = 1;
+
+          xForceVariance = 2000;
+          zForceVariance = 2000;
+
+          initTargetPos.set(10.0,1,50.0);
+
+          K_p_tool= 9;
+          K_i_tool= 1.4;
+          K_d_tool= 4;
+          gain_tool = 150000;
+  
+          
+    }
+
+
+
+
+
+
+
+
+
+
 
 
     else {
@@ -855,11 +1113,14 @@ double MyController::onAction(ActionEvent &evt) {
         if (myfile.is_open())
           {
 
-            if( ( ( (manipulationsPerSample * 1) < simulationCount ) && (simulationCount <= (manipulationsPerSample * 2 ) )   ) || ( ( (manipulationsPerSample * 3) < simulationCount ) && (simulationCount <= (manipulationsPerSample * 4 ) )   )     )
+            if( ( ( (manipulationsPerSample * 1) < simulationCount ) && (simulationCount <= (manipulationsPerSample * 2 ) )   ) || 
+              ( ( (manipulationsPerSample * 3) < simulationCount ) && (simulationCount <= (manipulationsPerSample * 4 ) )   ) ||
+              ( ( (manipulationsPerSample * 9) < simulationCount ) && (simulationCount <= (manipulationsPerSample * 10 ) )   )    )
             {
-              targetPos.x(startingTargetPos.x());
-              targetPos.z(startingTargetPos.z()); 
-              myfile << targetPos.x() << " , " << targetPos.z() << " , " ;
+               targetPos.x(startingTargetPos.x());
+               targetPos.z(startingTargetPos.z()); 
+               // myfile << targetPos.x() << " , " << targetPos.z() << " , " ;
+               myfile << 0.0  << " , " << 0.0 << " , " ;
             }
 
             else{
@@ -898,10 +1159,10 @@ double MyController::onAction(ActionEvent &evt) {
     
           // box->getPosition(targetPos);
           // Vector3d safePos(-480,1,480);
-          // // This parameter shall be stored for learning affordances using Bayesian Networks !
-          // // LOG_MSG((" Target pos is : %f %f %f ", targetPos.x(), targetPos.y(), targetPos.z() ));
+          // // // This parameter shall be stored for learning affordances using Bayesian Networks !
+          // // // LOG_MSG((" Target pos is : %f %f %f ", targetPos.x(), targetPos.y(), targetPos.z() ));
 
-          //  // Storing the reset position into the file. This is not required for learning BN, but just for checks. 
+          // //  // Storing the reset position into the file. This is not required for learning BN, but just for checks. 
 
 
 
@@ -910,10 +1171,10 @@ double MyController::onAction(ActionEvent &evt) {
           // differenceInPos.z(safePos.z() - targetPos.z());
           // // LOG_MSG (("The difference in position is: %f, %f, %f ", differenceInPos.x(), differenceInPos.y(), differenceInPos.z() )) ;   
 
-          // // box->getLinearVelocity(currentVelocity);  
-          // // LOG_MSG (("The target currentVelocity is: %f, %f, %f ", currentVelocity.x(), currentVelocity.y(), currentVelocity.z() )) ; 
+          // // // box->getLinearVelocity(currentVelocity);  
+          // // // LOG_MSG (("The target currentVelocity is: %f, %f, %f ", currentVelocity.x(), currentVelocity.y(), currentVelocity.z() )) ; 
           
-          // // double* ptr2 = controlPosition(initTargetPos, targetPos, 1.0,0.0, 0.7);
+          // // // double* ptr2 = controlPosition(initTargetPos, targetPos, 1.0,0.0, 0.7);
           // double* ptr2 = controlPosition(safePos, targetPos, 3.0,0.4, 1.2);
           // box->setLinearVelocity( ptr2[0] , 0, ptr2[1]);
 
@@ -949,7 +1210,7 @@ double MyController::onAction(ActionEvent &evt) {
           // if ( actionNumber == 1 && functionalFeature == 3 )  
           //    {
           //       Rotation setToolRot( 0.9239557,  0.0,  0.3824995,  0.0 );
-          //       ptr = controlRotation(setToolRot, currentToolRot, 5.0,0.4,2.2);
+          //       ptr = controlRotation(setToolRot, currentToolRot, 2.0,0.4,1.2);
 
           //     }
 
@@ -979,15 +1240,22 @@ double MyController::onAction(ActionEvent &evt) {
              
           // else{
                  // ptr = controlRotation(initialToolRot, currentToolRot, 5.0,0.4,2.2);
+
+                cout << "For tool " << endl;
+
                 ptr = controlRotation(initialToolRot, currentToolRot, K_p_tool , K_i_tool, K_d_tool);
 
               // }
-                 cout << "pid_ori_tool = " << ptr[0] << endl; 
-                 tool->addTorque(0, gain_tool * ptr[0],0);
+                 // cout << "pid_ori_tool_x = " << ptr[0] << endl; 
+                 cout << "pid_ori_tool_y = " << ptr[1] << endl; 
+                 // cout << "pid_ori_tool_z = " << ptr[2] << endl; 
 
-                  if ( abs(ptr[0]) < 0.04 )
+
+                 tool->addTorque(0, gain_tool * ptr[1],0);
+
+                  if ( abs(ptr[1]) < 0.04 )
                   {
-                    cout << "The difference in tool orientation is " << ptr[1] << endl;
+                    cout << "The difference in tool orientation about y axis is " << ptr[3] << endl;
                     isToolRotationReset=true;
                   }
 
@@ -995,26 +1263,84 @@ double MyController::onAction(ActionEvent &evt) {
 
           
          
-
           
         }
 
-
+     
 
       while (doesTargetRotationReset && !isTargetRotationReset && isToolRotationReset && !singleSimulation && ( simulationCount < totalSimulations) )
         {
            // orientation reset functionality has not been implemented yet!
 
-          // Rotation currentTargetRot;
-          // box->getRotation(currentTargetRot);
-      
-          // double* ptrTarget = controlRotation(initialTargetRot, currentTargetRot,3.0,0.4,1.2);
-          // cout << "pid_ori_target = " << ptrTarget[0] << endl; 
-          // box->addTorque(0,40000 * ptrTarget[0],0);
+        //   Rotation currentTargetRot;
+        //   box->getRotation(currentTargetRot);
+        //   cout << " The target rotation = " << currentTargetRot.qw() << " , " << currentTargetRot.qx() << " , " << currentTargetRot.qy() << " ,  " << currentTargetRot.qz() << endl;
 
-          // if ( abs(ptrTarget[0]) < 0.04 )
+
+        //   double* ptrTarget = NULL;
+
+        //   // cout << "For Target" << endl;
+      
+        //   ptrTarget = controlTargetRotation(initialTargetRot, currentTargetRot,3.0,0.4,1.2);
+
+        //   cout << "pid_ori_target_x = " << ptrTarget[0] << endl; 
+        //   cout << "pid_ori_target_y = " << ptrTarget[1] << endl; 
+        //   cout << "pid_ori_target_z = " << ptrTarget[2] << endl; 
+
+        //   int index;
+
+        // if (targetCount == 1) {
+
+        //   index = int (ptrTarget[3]);
+        //   cout << "The index at target" << index << endl;
+
+        // }
+
+
+
+
+
+        //   if ( index == 0 )
+        //   {
+        //        box->addTorque(200 * ptrTarget[0], 0, 0);
+        //        if (  abs(ptrTarget[0])   < 0.03 )
+        //         {
+        //         // cout << "The difference in target orientation about Y axis is " << ptrTarget[3] << endl;
+        //         isTargetRotationReset = true;
+        //       }
+        //   }
+
+        //   if ( index == 1 )
+        //   {
+        //       box->addTorque(0, 200 * ptrTarget[1],  0);
+
+        //       if (  abs(ptrTarget[1])   < 0.03 )
+        //         {
+        //         // cout << "The difference in target orientation about Y axis is " << ptrTarget[3] << endl;
+        //         isTargetRotationReset = true;
+        //       }
+
+        //   }
+
+        //   if ( index == 2 )
+        //   {
+        //       box->addTorque(0, 0, 200 * ptrTarget[2] );
+        //       if (  abs(ptrTarget[2])   < 0.03 )
+        //         {
+        //         // cout << "The difference in target orientation about Y axis is " << ptrTarget[3] << endl;
+        //         isTargetRotationReset = true;
+        //       }
+
+        //       targetCount++;
+
+
+        // }
+
+
+
+          // if (  abs(ptrTarget[1])   < 0.04 )
           // {
-          //   cout << "The difference in target orientation is " << ptrTarget[1] << endl;
+          //   cout << "The difference in target orientation about Y axis is " << ptrTarget[3] << endl;
           //   isTargetRotationReset = true;
           // }
 
@@ -1072,47 +1398,237 @@ double MyController::onAction(ActionEvent &evt) {
 
          // // Please comment out the following four lines for reseting target to original position
 
+        int flag1 = 0 ;
+        int flag2 = 1 ;
+
         while (doesTargetPositionReset && !singleSimulation && !isTargetPositionReset && isToolPositionReset && ( simulationCount < totalSimulations) && isTargetRotationReset  )
         {
 
     
           box->getPosition(targetPos);
+          int quadrant;
+         
+          static Vector3d subgoal1;
+          static Vector3d subgoal2;
+          static Vector3d targetIntermediatePos;
           // This parameter shall be stored for learning affordances using Bayesian Networks !
           // LOG_MSG((" Target pos is : %f %f %f ", targetPos.x(), targetPos.y(), targetPos.z() ));
 
            // Storing the reset position into the file. This is not required for learning BN, but just for checks. 
 
+          Vector3d distanceFromOrigin;
+          distanceFromOrigin.x( targetPos.x() - initToolPos.x()  );
+          distanceFromOrigin.y( targetPos.y() - initToolPos.y()  );
+          distanceFromOrigin.z( targetPos.z() - initToolPos.z()  );
+
+          if (distanceFromOrigin.x() > 0 && distanceFromOrigin.z() <  0 )
+          {
+            quadrant = 1;
+            cout << "The quadrant = " << quadrant << endl ;
+
+            // if (!flag1)
+            // {
+              subgoal1.set(20,1,-160);
+            // }
+            // if (!flag2){
+
+            //   cout << "It entered the Flag2 = " << flag << endl;
+              subgoal2.set(-120 ,1, -160);
+            // }
+            
+
+          }
+
+          if ( distanceFromOrigin.x() < 0 && distanceFromOrigin.z() <  0 )
+          {
+            
+            quadrant = 2;
+            cout << "The quadrant = " << quadrant << endl ;
+
+            // if (!flag1)
+            // {
+              subgoal1.set(-120,1,-160);
+            // }
+            // if (!flag2){
+
+              // cout << "It entered the Flag2 = " << flag << endl;
+              subgoal2.set(-120, 1, 160);
+            // }
+
+          }
+
+         if ( distanceFromOrigin.x() <= 0 && distanceFromOrigin.z() >= 0 )
+
+          {
+            quadrant = 3;
+            cout << "The quadrant = " << quadrant << endl ;
+            cout << "The simulation count at quadrant 3 is " << simulationCount <<  endl;
+
+            if (actionNumber == 4 || actionNumber == 5)
+
+            {
+              cout << "It will be moved to quadrant 4" << endl;
+              subgoal1.set(-120,1,160);
+              subgoal2.set(50,1,160);
+            }
+
+            else{
+
+              subgoal1.set(initTargetPos.x(), initTargetPos.y(), initTargetPos.z());
+
+            }
+
+            
+          }
+
+          if ( distanceFromOrigin.x() > 0 && distanceFromOrigin.z() > 0 )
+          {
 
 
-          differenceInPos.x(initTargetPos.x() - targetPos.x());
-          differenceInPos.y(initTargetPos.y() - targetPos.y());
-          differenceInPos.z(initTargetPos.z() - targetPos.z());
-          // LOG_MSG (("The difference in position is: %f, %f, %f ", differenceInPos.x(), differenceInPos.y(), differenceInPos.z() )) ;   
+            quadrant = 4;
+            cout << "The quadrant = " << quadrant << endl ; 
+            cout << "actionNumber = " << actionNumber << endl; 
+            // if (!flag1)
+            // {
+            //    cout << "Flag1 = " << flag << endl;
 
-          box->getLinearVelocity(currentVelocity);  
-          // LOG_MSG (("The target currentVelocity is: %f, %f, %f ", currentVelocity.x(), currentVelocity.y(), currentVelocity.z() )) ; 
+            if ( (actionNumber == 4) || (actionNumber == 5) )
+            {
+               cout << "This is right" << endl;
+               subgoal1.set(initTargetPos.x(), initTargetPos.y(), initTargetPos.z());
+              
+            }
+
+            else{
+
+               cout << "It will be moved to other quadrant" << endl; 
+               subgoal1.set( 50, 1, 160);
+               subgoal2.set( -120, 1, 160 );
+
+            }
+            // }
+            // if (!flag2)
+            // {
+            //    cout << "It entered the Flag2 = " << flag << endl;
+               
+            // }
+          }
+
+          while ( !flag1 && flag2 )
+          {
+                 // cout << "This is flag1 loop is " << endl; 
+
+                 cout << "Subgoal 1 in  " << quadrant << "is " << subgoal1.x() << " , " << subgoal1.z() << endl;
+                 box->getPosition(targetIntermediatePos);
+
+                 differenceInPos.x(subgoal1.x()-targetIntermediatePos.x());
+                 differenceInPos.y(subgoal1.y()-targetIntermediatePos.y());
+                 differenceInPos.z(subgoal1.z()-targetIntermediatePos.z());
+
+
+                  double* ptr2 = controlPosition(subgoal1, targetIntermediatePos, 3.0,0.4, 1.2);
+                  box->setLinearVelocity( ptr2[0] , 0, ptr2[1]);
+
+                  if ( abs(differenceInPos.x()) < 0.3 && abs(differenceInPos.z()) < 0.3 )
+                  {
+
+                     if (quadrant == 3 && actionNumber!=4 && actionNumber!=5 )
+                     {
+                          isTargetPositionReset = true;
+                          if (myfile.is_open())
+                          {
+                              myfile << targetIntermediatePos.x() << " , " << targetIntermediatePos.z() << " , " ;
+                          }
+                     }
+
+                     if (quadrant == 4 && ( actionNumber==4 || actionNumber== 5 ) )
+                     {
+                          isTargetPositionReset = true;
+                          if (myfile.is_open())
+                          {
+                              myfile << targetIntermediatePos.x() << " , " << targetIntermediatePos.z() << " , " ;
+                          }
+                     }
+
+
+
+                      // LOG_MSG((" Target reset at : %f %f %f ", targetPos.x(), targetPos.y(), targetPos.z() ));
+                      LOG_MSG (("The difference in target position is: %f, %f, %f ", differenceInPos.x(), differenceInPos.y(), differenceInPos.z() )) ; 
+                      differenceInPos.set(0,0,0);
+                      currentVelocity.set(0,0,0);
+                      flag1=1;
+                      flag2=0;
+                     
+                          
+
+                 }
+          }
+
+          while ( !flag2 && flag1 && !isTargetPositionReset )
+          {
+
+                 cout << "Subgoal 2 in  " << quadrant << " is " << subgoal2.x() << " , " << subgoal2.z() << endl;
+                 box->getPosition(targetIntermediatePos);
+
+                 differenceInPos.x(subgoal2.x()-targetIntermediatePos.x());
+                 differenceInPos.y(subgoal2.y()-targetIntermediatePos.y());
+                 differenceInPos.z(subgoal2.z()-targetIntermediatePos.z());
+
+
+                  double* ptr2 = controlPosition(subgoal2, targetIntermediatePos, 3.0,0.4, 1.2);
+                  box->setLinearVelocity( ptr2[0] , 0, ptr2[1]);
+
+                  if ( abs(differenceInPos.x()) < 0.3 && abs(differenceInPos.z()) < 0.3 )
+                  {
+
+                      // LOG_MSG((" Target reset at : %f %f %f ", targetIntermediatePos.x(), targetIntermediatePos.y(), targetIntermediatePos.z() ));
+                      LOG_MSG (("The difference in target position is: %f, %f, %f ", differenceInPos.x(), differenceInPos.y(), differenceInPos.z() )) ; 
+                      differenceInPos.set(0,0,0);
+                      currentVelocity.set(0,0,0);
+                      flag1=0;
+                      flag2=1;
+
+                  }
           
-          // double* ptr2 = controlPosition(initTargetPos, targetPos, 1.0,0.0, 0.7);
-          double* ptr2 = controlPosition(initTargetPos, targetPos, 3.0,0.4, 1.2);
-          box->setLinearVelocity( ptr2[0] , 0, ptr2[1]);
+          }
+
+
+
+      
+
+
+          // differenceInPos.x(initTargetPos.x() - targetPos.x());
+          // differenceInPos.y(initTargetPos.y() - targetPos.y());
+          // differenceInPos.z(initTargetPos.z() - targetPos.z());
+          // // LOG_MSG (("The difference in position is: %f, %f, %f ", differenceInPos.x(), differenceInPos.y(), differenceInPos.z() )) ;   
+
+          // box->getLinearVelocity(currentVelocity);  
+          // // LOG_MSG (("The target currentVelocity is: %f, %f, %f ", currentVelocity.x(), currentVelocity.y(), currentVelocity.z() )) ; 
+          
+          // // double* ptr2 = controlPosition(initTargetPos, targetPos, 1.0,0.0, 0.7);
+          // double* ptr2 = controlPosition(initTargetPos, targetPos, 3.0,0.4, 1.2);
+          // box->setLinearVelocity( ptr2[0] , 0, ptr2[1]);
         
 
 
-          if ( abs(differenceInPos.x()) < 0.3 && abs(differenceInPos.z()) < 0.3 )
-            {
+          // if ( abs(differenceInPos.x()) < 0.3 && abs(differenceInPos.z()) < 0.3 )
+          //   {
 
-              // LOG_MSG((" Target reset at : %f %f %f ", targetPos.x(), targetPos.y(), targetPos.z() ));
-              LOG_MSG (("The difference in target position is: %f, %f, %f ", differenceInPos.x(), differenceInPos.y(), differenceInPos.z() )) ; 
-              isTargetPositionReset = true;
-              differenceInPos.set(0,0,0);
-              currentVelocity.set(0,0,0);
+          //     // LOG_MSG((" Target reset at : %f %f %f ", targetPos.x(), targetPos.y(), targetPos.z() ));
+          //     LOG_MSG (("The difference in target position is: %f, %f, %f ", differenceInPos.x(), differenceInPos.y(), differenceInPos.z() )) ; 
+          //     isTargetPositionReset = true;
+          //     differenceInPos.set(0,0,0);
+          //     currentVelocity.set(0,0,0);
 
-              if (myfile.is_open())
-              {
-                  myfile << targetPos.x() << " , " << targetPos.z() << " , " ;
-              }
+          //     if (myfile.is_open())
+          //     {
+          //         myfile << targetPos.x() << " , " << targetPos.z() << " , " ;
+          //     }
 
-            }
+          //   }
+
+
+
 
         }
 
@@ -1166,6 +1682,7 @@ void MyController::onCollision(CollisionEvent &evt) {
   
   SimObj *tool = getObj("StickTool");
   SimObj *box = getObj("box_001");
+  Vector3d targetStopPos;
 
 
   if (Colli == false) {  
@@ -1214,8 +1731,11 @@ void MyController::onCollision(CollisionEvent &evt) {
         // Vector3d safePos(-480,1,480);
         // double* ptr2 = controlPosition(safePos, targetPos, 3.0,0.4, 1.2);
         // box->setLinearVelocity( ptr2[0] , 0, ptr2[1]);
+        box->getPosition(targetStopPos);
+        myfile << targetStopPos.x() << " ,  " << targetStopPos.z();
         
         simulationCount--;
+
         cout << "Modified Simulation count is " << simulationCount << endl;
       }
 
@@ -1241,14 +1761,16 @@ void MyController::onCollision(CollisionEvent &evt) {
 
       {
 
-            if( ( ( (manipulationsPerSample * 1) < simulationCount ) && (simulationCount <= (manipulationsPerSample * 2 ) )   ) || ( ( (manipulationsPerSample * 3) < simulationCount ) && (simulationCount <= (manipulationsPerSample * 4 ) )   )     )
+            if( ( ( (manipulationsPerSample * 1) < simulationCount ) && (simulationCount <= (manipulationsPerSample * 2 ) )   ) || 
+              ( ( (manipulationsPerSample * 3) < simulationCount ) && (simulationCount <= (manipulationsPerSample * 4 ) )   )   ||
+              ( ( (manipulationsPerSample * 9) < simulationCount ) && (simulationCount <= (manipulationsPerSample * 10 ) )   ) )
             {
                myfile << 0.0 << " , " << 0.0 << " , " << 0.0 << " , " << 0.0 << " , " ;
             }
 
             else{
                   myfile << velocityOfTool.x() << " , " << velocityOfTool.z() << " , " << velocityOfTarget.x() << " , " << velocityOfTarget.z() << " , " ;
-            }
+             }
 
             // myfile << velocityOfTool.x() << " , " << velocityOfTool.z() << " , " << velocityOfTarget.x() << " , " << velocityOfTarget.z() << " , " ;
       }
@@ -1279,19 +1801,37 @@ void MyController::onCollision(CollisionEvent &evt) {
           
           velocityOnTool.set( firstVelocityOnTool.x() + v_x, 0, firstVelocityOnTool.z() + v_z );   
 
-          double f_x, f_z; 
+          double f_x;
+          double f_z;
+          double r;
+
+          r = ((double) rand() / (RAND_MAX)) ;
+
 
           if (isForceinXAllowed)
           {
-            f_x = rand() % int(xForceVariance);
+            // f_x = rand() % int(xForceVariance); // when force in digaonal direction does get varried: 
+            
+            f_x = r * int(xForceVariance);
+
+            cout << "r = " << r << endl; 
+            cout << "f_x = " << f_x << endl;
+         
           }
 
-          if(isVelocityinZAllowed)
+          if(isForceinZAllowed)
           {
-            f_z = rand() % int(zForceVariance);
-          }  
+            // f_z = rand() % int(zForceVariance); // when force in digaonal direction does get varried: 
+            f_z = r * int(zForceVariance);
+            cout << "f_z = " << f_z << endl;
 
-          forceOnTool.set( firstForceOnTool.x() + f_x, 0, firstForceOnTool.z() + f_z ); 
+          } 
+
+
+
+          forceOnTool.set( firstForceOnTool.x() + f_x, 0, firstForceOnTool.z() + f_z ); // when force in digaonal direction gets varried
+
+       
 
 
 
